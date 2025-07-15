@@ -3,11 +3,11 @@
 const SUPABASE_URL = 'https://oitzyheeakcwpnavdunc.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9pdHp5aGVlYWtjd3BuYXZkdW5jIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI1ODkyNjgsImV4cCI6MjA2ODE2NTI2OH0.3iUJg2qNd0yh9EAG13weBAtnct018Qfb-OK2PeMCYWU';
 
-// 2. Inicializa el cliente de Supabase.
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// --- INICIALIZACIÓN DEL CLIENTE ---
+// Esta es la forma correcta de inicializar el cliente.
+const clienteSupabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// --- SELECTORES DEL DOM ---
-// Capturamos los elementos del HTML con los que vamos a interactuar.
+// --- SELECTORES DEL DOM (VERIFICADOS CON TU HTML) ---
 const transactionForm = document.getElementById('transactionForm');
 const transactionsTbody = document.getElementById('transactionsTbody');
 const totalIngresosSpan = document.getElementById('total-ingresos');
@@ -17,50 +17,38 @@ const balanceTotalSpan = document.getElementById('balance-total');
 // --- FUNCIONES ---
 
 /**
- * Función para obtener todos los movimientos de la base de datos.
+ * Obtiene los movimientos de Supabase y los muestra en la tabla.
  */
 async function getMovimientos() {
-    // Usamos el cliente de Supabase para hacer una consulta.
-    // .from('movimientos') -> seleccionamos la tabla.
-    // .select('*') -> pedimos todas las columnas.
-    // .order('fecha', { ascending: false }) -> ordenamos por fecha descendente.
-    const { data, error } = await supabase
+    const { data, error } = await clienteSupabase
         .from('movimientos')
         .select('*')
         .order('fecha', { ascending: false });
 
     if (error) {
         console.error('Error al obtener movimientos:', error);
+        alert('Error al cargar los datos. Revisa la consola (F12) para más detalles.');
         return;
     }
-
-    // Si todo va bien, llamamos a la función que renderiza los datos en la tabla.
     renderMovimientos(data);
 }
 
 /**
- * Función para renderizar los movimientos en la tabla y calcular los totales.
- * @param {Array} movimientos - Un array de objetos, cada uno es un movimiento.
+ * Dibuja los movimientos en la tabla y calcula los totales.
  */
 function renderMovimientos(movimientos) {
-    // Limpiamos el contenido previo de la tabla para no duplicar datos.
     transactionsTbody.innerHTML = '';
-
     let totalIngresos = 0;
     let totalGastos = 0;
 
     movimientos.forEach(mov => {
-        // Por cada movimiento, creamos una nueva fila en la tabla.
         const tr = document.createElement('tr');
-
-        // Formateamos la fecha para que sea más legible.
         const fechaFormateada = new Date(mov.fecha).toLocaleDateString('es-ES', {
             day: '2-digit',
             month: '2-digit',
             year: 'numeric'
         });
 
-        // Llenamos la fila con los datos del movimiento.
         tr.innerHTML = `
             <td>${mov.tipo === 'ingreso' ? '🟢' : '🔴'} ${mov.tipo}</td>
             <td>${mov.descripcion}</td>
@@ -72,7 +60,6 @@ function renderMovimientos(movimientos) {
         `;
         transactionsTbody.appendChild(tr);
 
-        // Calculamos los totales.
         if (mov.tipo === 'ingreso') {
             totalIngresos += mov.monto;
         } else {
@@ -80,52 +67,49 @@ function renderMovimientos(movimientos) {
         }
     });
 
-    // Actualizamos los totales en el HTML.
     totalIngresosSpan.textContent = totalIngresos.toFixed(2);
     totalGastosSpan.textContent = totalGastos.toFixed(2);
     balanceTotalSpan.textContent = (totalIngresos - totalGastos).toFixed(2);
 }
 
 /**
- * Función para añadir un nuevo movimiento.
- * @param {Event} event - El evento del formulario.
+ * Añade un nuevo movimiento al enviar el formulario.
  */
 async function addMovimiento(event) {
-    event.preventDefault(); // Evita que la página se recargue al enviar el formulario.
+    event.preventDefault();
 
-    // Obtenemos los valores del formulario.
     const tipo = document.getElementById('type').value;
     const descripcion = document.getElementById('description').value;
-    const monto = parseFloat(document.getElementById('amount').value);
+    const monto = parseFloat(document.getElementById('cantidad').value); 
     
-    // Creamos el nuevo objeto para insertar en Supabase.
+    if (isNaN(monto) || monto <= 0) {
+        alert('Por favor, introduce una cantidad válida.');
+        return;
+    }
+
     const nuevoMovimiento = {
         tipo: tipo,
         descripcion: descripcion,
         monto: monto,
-        fecha: new Date().toISOString() // Usamos la fecha y hora actual.
+        fecha: new Date().toISOString()
     };
 
-    // Usamos el cliente de Supabase para insertar el nuevo registro.
-    const { error } = await supabase.from('movimientos').insert([nuevoMovimiento]);
+    const { error } = await clienteSupabase.from('movimientos').insert([nuevoMovimiento]);
 
     if (error) {
         console.error('Error al añadir movimiento:', error);
+        alert('No se pudo añadir el movimiento. Revisa la consola (F12).');
     } else {
-        // Si se inserta correctamente, limpiamos el formulario y recargamos los datos.
         transactionForm.reset();
         getMovimientos();
     }
 }
 
 /**
- * Función para borrar un movimiento.
- * @param {number} id - El ID del movimiento a borrar.
+ * Borra un movimiento al hacer clic en el botón.
  */
 async function deleteMovimiento(id) {
-    // Usamos el cliente de Supabase para borrar un registro.
-    // .match({ id: id }) -> especificamos qué fila borrar.
-    const { error } = await supabase
+    const { error } = await clienteSupabase
         .from('movimientos')
         .delete()
         .match({ id: id });
@@ -133,23 +117,17 @@ async function deleteMovimiento(id) {
     if (error) {
         console.error('Error al borrar movimiento:', error);
     } else {
-        // Si se borra correctamente, recargamos la lista de movimientos.
         getMovimientos();
     }
 }
 
 
 // --- EVENT LISTENERS ---
-
-// 1. Escuchamos el evento 'submit' del formulario para añadir movimientos.
 transactionForm.addEventListener('submit', addMovimiento);
 
-// 2. Escuchamos clics en el cuerpo de la tabla para detectar si se pulsa un botón de borrar.
-// Esto se llama "delegación de eventos" y es más eficiente que añadir un listener a cada botón.
 transactionsTbody.addEventListener('click', (event) => {
     if (event.target.classList.contains('delete-btn')) {
         const id = event.target.getAttribute('data-id');
-        // Pedimos confirmación antes de borrar.
         if (confirm('¿Estás seguro de que quieres borrar este movimiento?')) {
             deleteMovimiento(id);
         }
@@ -157,5 +135,5 @@ transactionsTbody.addEventListener('click', (event) => {
 });
 
 // --- INICIALIZACIÓN ---
-// Al cargar la página, llamamos a getMovimientos() por primera vez para poblar la tabla.
+// Carga los datos iniciales cuando el documento está listo.
 document.addEventListener('DOMContentLoaded', getMovimientos);
