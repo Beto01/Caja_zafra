@@ -12,14 +12,16 @@
         <h1>Control de Caja 💰</h1>
 
         <div class="form-container">
-            <h2>Registrar Movimiento</h2>
+            <!-- CAMBIO: Añadido un ID al título para poder cambiarlo con JS -->
+            <h2 id="form-title">Registrar Movimiento</h2>
             <form id="transactionForm">
+                <!-- CAMBIO: Añadido campo oculto para guardar el ID al editar -->
+                <input type="hidden" id="edit-id">
                 <select id="type" required>
                     <option value="ingreso">Ingreso</option>
                     <option value="gasto">Gasto</option>
                 </select>
                 <input type="text" id="description" placeholder="Descripción" required>
-                <!-- CORRECCIÓN: ID y placeholder actualizados a "cantidad" -->
                 <input type="number" id="cantidad" placeholder="Cantidad (€)" step="0.01" required>
                 <button type="submit">Añadir Movimiento</button>
             </form>
@@ -39,7 +41,6 @@
                     <tr>
                         <th>Tipo</th>
                         <th>Descripción</th>
-                        <!-- CORRECCIÓN: Encabezado de tabla actualizado -->
                         <th>Cantidad</th>
                         <th>Fecha</th>
                         <th>Acciones</th>
@@ -52,9 +53,7 @@
         </div>
     </div>
 
-    <!-- Script de Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- Tu script personalizado -->
     <script src="app.js"></script>
 </body>
 </html>

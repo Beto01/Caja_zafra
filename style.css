@@ -84,6 +84,21 @@ thead {
     color: white;
 }
 
+/* Contenedor para los botones de acción */
+td:last-child {
+    display: flex;
+    gap: 5px;
+}
+
+/* CAMBIO: Estilo para el nuevo botón de editar */
+.edit-btn {
+    background-color: #2980b9;
+}
+
+.edit-btn:hover {
+    background-color: #2c3e50;
+}
+
 .delete-btn {
     background-color: #e74c3c;
     color: white;

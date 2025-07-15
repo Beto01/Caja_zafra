@@ -10,6 +10,11 @@ const transactionsTbody = document.getElementById('transactionsTbody');
 const totalIngresosSpan = document.getElementById('total-ingresos');
 const totalGastosSpan = document.getElementById('total-gastos');
 const balanceTotalSpan = document.getElementById('balance-total');
+// CAMBIO: Nuevos selectores para el modo edición
+const formTitle = document.getElementById('form-title');
+const editIdInput = document.getElementById('edit-id');
+const submitButton = transactionForm.querySelector('button');
+
 
 /**
  * Función para obtener todos los movimientos de la base de datos.
@@ -18,7 +23,6 @@ async function getMovimientos() {
     const { data, error } = await supabase
         .from('movimientos')
         .select('*')
-        // Ordenamos por 'created_at', la columna de fecha automática de Supabase.
         .order('created_at', { ascending: false });
 
     if (error) {
@@ -30,7 +34,6 @@ async function getMovimientos() {
 
 /**
  * Función para renderizar los movimientos en la tabla y calcular los totales.
- * @param {Array} movimientos - Un array de objetos, cada uno es un movimiento.
  */
 function renderMovimientos(movimientos) {
     transactionsTbody.innerHTML = '';
@@ -39,19 +42,20 @@ function renderMovimientos(movimientos) {
 
     movimientos.forEach(mov => {
         const tr = document.createElement('tr');
-        // Usamos 'created_at' para mostrar la fecha.
         const fechaFormateada = new Date(mov.created_at).toLocaleDateString('es-ES', {
             day: '2-digit',
             month: '2-digit',
             year: 'numeric'
         });
 
+        // CAMBIO: Añadido el botón de "Editar"
         tr.innerHTML = `
             <td>${mov.tipo === 'ingreso' ? '🟢' : '🔴'} ${mov.tipo}</td>
             <td>${mov.descripcion}</td>
             <td>${mov.cantidad.toFixed(2)} €</td>
             <td>${fechaFormateada}</td>
             <td>
+                <button class="edit-btn" data-id="${mov.id}">Editar</button>
                 <button class="delete-btn" data-id="${mov.id}">Borrar</button>
             </td>
         `;
@@ -70,39 +74,83 @@ function renderMovimientos(movimientos) {
 }
 
 /**
- * Función para añadir un nuevo movimiento.
- * @param {Event} event - El evento del formulario.
+ * Función que maneja el envío del formulario, ya sea para crear o para actualizar.
  */
-async function addMovimiento(event) {
+async function handleFormSubmit(event) {
     event.preventDefault();
 
-    const tipo = document.getElementById('type').value;
-    const descripcion = document.getElementById('description').value;
-    const cantidad = parseFloat(document.getElementById('cantidad').value);
-    
-    // Ya no necesitamos añadir la fecha. Supabase la añade automáticamente
-    // en la columna 'created_at'.
-    const nuevoMovimiento = {
-        tipo: tipo,
-        descripcion: descripcion,
-        cantidad: cantidad
+    const id = editIdInput.value;
+    const movimientoData = {
+        tipo: document.getElementById('type').value,
+        descripcion: document.getElementById('description').value,
+        cantidad: parseFloat(document.getElementById('cantidad').value)
     };
 
-    console.log('Añadiendo movimiento:', nuevoMovimiento);
-    const { data, error } = await supabase.from('movimientos').insert([nuevoMovimiento]).select();
+    let error;
+    if (id) {
+        // --- MODO EDICIÓN ---
+        console.log(`Actualizando movimiento ID: ${id}`);
+        const { error: updateError } = await supabase
+            .from('movimientos')
+            .update(movimientoData)
+            .eq('id', id);
+        error = updateError;
+    } else {
+        // --- MODO CREACIÓN ---
+        console.log('Añadiendo nuevo movimiento:', movimientoData);
+        const { error: insertError } = await supabase
+            .from('movimientos')
+            .insert([movimientoData]);
+        error = insertError;
+    }
 
     if (error) {
-        console.error('Error al añadir movimiento:', JSON.stringify(error, null, 2));
+        console.error('Error al guardar el movimiento:', JSON.stringify(error, null, 2));
     } else {
-        console.log('Movimiento añadido con éxito:', data);
-        transactionForm.reset();
+        console.log('Movimiento guardado con éxito');
+        resetForm();
         getMovimientos();
     }
 }
 
 /**
+ * Prepara el formulario para editar un movimiento existente.
+ */
+async function handleEditClick(id) {
+    const { data: movimiento, error } = await supabase
+        .from('movimientos')
+        .select('*')
+        .eq('id', id)
+        .single();
+
+    if (error) {
+        console.error('Error al obtener el movimiento para editar:', error);
+        return;
+    }
+
+    // Rellenamos el formulario con los datos del movimiento
+    document.getElementById('type').value = movimiento.tipo;
+    document.getElementById('description').value = movimiento.descripcion;
+    document.getElementById('cantidad').value = movimiento.cantidad;
+
+    // Configuramos el formulario en modo edición
+    editIdInput.value = movimiento.id;
+    formTitle.textContent = 'Editando Movimiento';
+    submitButton.textContent = 'Guardar Cambios';
+}
+
+/**
+ * Resetea el formulario a su estado inicial para añadir un nuevo movimiento.
+ */
+function resetForm() {
+    transactionForm.reset();
+    editIdInput.value = '';
+    formTitle.textContent = 'Registrar Movimiento';
+    submitButton.textContent = 'Añadir Movimiento';
+}
+
+/**
  * Función para borrar un movimiento.
- * @param {number} id - El ID del movimiento a borrar.
  */
 async function deleteMovimiento(id) {
     const { error } = await supabase
@@ -118,11 +166,18 @@ async function deleteMovimiento(id) {
 }
 
 // --- EVENT LISTENERS ---
-transactionForm.addEventListener('submit', addMovimiento);
 
+// 1. Listener para el envío del formulario (crear o actualizar)
+transactionForm.addEventListener('submit', handleFormSubmit);
+
+// 2. Listener en la tabla para los botones de Editar y Borrar
 transactionsTbody.addEventListener('click', (event) => {
-    if (event.target.classList.contains('delete-btn')) {
-        const id = event.target.getAttribute('data-id');
+    const target = event.target;
+    const id = target.getAttribute('data-id');
+
+    if (target.classList.contains('edit-btn')) {
+        handleEditClick(id);
+    } else if (target.classList.contains('delete-btn')) {
         if (confirm('¿Estás seguro de que quieres borrar este movimiento?')) {
             deleteMovimiento(id);
         }
