@@ -1,0 +1,55 @@
+ <!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de Caja</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="container">
+        <h1>Control de Caja 💰</h1>
+
+        <div class="form-container">
+            <h2>Registrar Movimiento</h2>
+            <form id="transactionForm">
+                <select id="type" required>
+                    <option value="ingreso">Ingreso</option>
+                    <option value="gasto">Gasto</option>
+                </select>
+                <input type="text" id="description" placeholder="Descripción" required>
+                <input type="number" id="amount" placeholder="Monto (€)" step="0.01" required>
+                <button type="submit">Añadir Movimiento</button>
+            </form>
+        </div>
+
+        <div class="summary">
+            <h2>Resumen Semanal</h2>
+            <p>Ingresos: <span id="total-ingresos">0.00</span> €</p>
+            <p>Gastos: <span id="total-gastos">0.00</span> €</p>
+            <h3>Balance Total: <span id="balance-total">0.00</span> €</h3>
+        </div>
+
+        <div class="transactions-container">
+            <h2>Movimientos Recientes</h2>
+            <table id="transactionsTable">
+                <thead>
+                    <tr>
+                        <th>Tipo</th>
+                        <th>Descripción</th>
+                        <th>Monto</th>
+                        <th>Fecha</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="transactionsTbody">
+                    </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="app.js"></script>
+</body>
+</html>
