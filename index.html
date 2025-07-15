@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -19,6 +19,7 @@
                     <option value="gasto">Gasto</option>
                 </select>
                 <input type="text" id="description" placeholder="Descripción" required>
+                <!-- CORRECCIÓN: ID y placeholder actualizados a "cantidad" -->
                 <input type="number" id="cantidad" placeholder="Cantidad (€)" step="0.01" required>
                 <button type="submit">Añadir Movimiento</button>
             </form>
@@ -38,18 +39,22 @@
                     <tr>
                         <th>Tipo</th>
                         <th>Descripción</th>
+                        <!-- CORRECCIÓN: Encabezado de tabla actualizado -->
                         <th>Cantidad</th>
                         <th>Fecha</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody id="transactionsTbody">
-                    </tbody>
+                    <!-- Las filas se insertarán aquí desde JavaScript -->
+                </tbody>
             </table>
         </div>
     </div>
 
+    <!-- Script de Supabase -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Tu script personalizado -->
     <script src="app.js"></script>
 </body>
 </html>
