@@ -96,7 +96,7 @@ async function addMovimiento(event) {
     // Obtenemos los valores del formulario.
     const tipo = document.getElementById('type').value;
     const descripcion = document.getElementById('description').value;
-    const monto = parseFloat(document.getElementById('amount').value);
+    const monto = parseFloat(document.getElementById('cantidad').value);
     
     // Creamos el nuevo objeto para insertar en Supabase.
     const nuevoMovimiento = {
