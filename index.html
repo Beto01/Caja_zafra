@@ -8,14 +8,16 @@
 </head>
 <body>
 
-    <div class="container">
+    <div class="container" id="main-page">
         <h1>Control de Caja 💰</h1>
 
+        <div class="header-actions">
+            <button id="show-summary-btn">Ver Resumen Diario</button>
+        </div>
+
         <div class="form-container">
-            <!-- CAMBIO: Añadido un ID al título para poder cambiarlo con JS -->
             <h2 id="form-title">Registrar Movimiento</h2>
             <form id="transactionForm">
-                <!-- CAMBIO: Añadido campo oculto para guardar el ID al editar -->
                 <input type="hidden" id="edit-id">
                 <select id="type" required>
                     <option value="ingreso">Tenemos</option>
@@ -47,11 +49,19 @@
                     </tr>
                 </thead>
                 <tbody id="transactionsTbody">
-                    <!-- Las filas se insertarán aquí desde JavaScript -->
-                </tbody>
+                    </tbody>
             </table>
         </div>
     </div>
+
+    <div class="container hidden" id="summary-page">
+        <div class="header-actions">
+            <button id="back-to-main-btn">← Volver al Inicio</button>
+        </div>
+        <h1>Resumen por Día</h1>
+        <div id="daily-summary-content"></div>
+    </div>
+
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="app.js"></script>
