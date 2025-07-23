@@ -38,14 +38,23 @@ function showSummaryPage() {
 
 // --- LÓGICA DE LA APLICACIÓN ---
 
-async function getMovimientos() {
-    const { data, error } = await supabase
+function showError(message) {
+    alert(`Error: ${message}`);
+}
+
+async function fetchAllMovimientos() {
+    return await supabase
         .from('movimientos')
         .select('*')
         .order('created_at', { ascending: false });
+}
+
+async function getMovimientos() {
+    const { data, error } = await fetchAllMovimientos();
 
     if (error) {
         console.error('Error al obtener movimientos:', JSON.stringify(error, null, 2));
+        showError('No se pudieron cargar los movimientos. Revisa la conexión.');
         return;
     }
     renderMovimientos(data);
@@ -91,14 +100,12 @@ function renderMovimientos(movimientos) {
 async function generateDailySummary() {
     dailySummaryContent.innerHTML = '<h3>Cargando resumen...</h3>';
 
-    const { data: movimientos, error } = await supabase
-        .from('movimientos')
-        .select('*')
-        .order('created_at', { ascending: false });
+    const { data: movimientos, error } = await fetchAllMovimientos();
 
     if (error) {
         dailySummaryContent.innerHTML = '<p style="color: red;">Error al cargar el resumen.</p>';
         console.error('Error en resumen:', error);
+        showError('No se pudo generar el resumen diario.');
         return;
     }
 
@@ -129,7 +136,7 @@ async function generateDailySummary() {
         const groupContainer = document.createElement('div');
         groupContainer.className = 'daily-summary-group';
 
-        let movementsHtml = '<ul>';
+        let movementsHtml = '<ul class="daily-movements-list">';
         group.forEach(mov => {
             const icon = mov.tipo === 'ingreso' ? '🟢' : '🔴';
             movementsHtml += `<li>${icon} ${mov.descripcion}: <strong>${mov.cantidad.toFixed(2)} €</strong></li>`;
@@ -149,7 +156,7 @@ async function generateDailySummary() {
             ${movementsHtml}
             <div class="daily-summary-footer">
                 <p>Ingresado: ${dailyIngresos.toFixed(2)} €</p>
-                <p>Vendido: ${dailyGastos.toFixed(2)} €</p>
+                <p>Gastos: ${dailyGastos.toFixed(2)} €</p>
                 <p>Balance del día: ${balance.toFixed(2)} €</p>
             </div>
         `;
@@ -172,6 +179,7 @@ async function handleFormSubmit(event) {
 
     if (error) {
         console.error('Error al guardar el movimiento:', JSON.stringify(error, null, 2));
+        showError('No se pudo guardar el movimiento.');
     } else {
         resetForm();
         getMovimientos();
@@ -182,6 +190,7 @@ async function handleEditClick(id) {
     const { data: movimiento, error } = await supabase.from('movimientos').select('*').eq('id', id).single();
     if (error) {
         console.error('Error al obtener el movimiento para editar:', error);
+        showError('No se pudo encontrar el movimiento para editar.');
         return;
     }
     document.getElementById('type').value = movimiento.tipo;
@@ -198,12 +207,14 @@ function resetForm() {
     editIdInput.value = '';
     formTitle.textContent = 'Registrar Movimiento';
     submitButton.textContent = 'Añadir Movimiento';
+    window.scrollTo(0, 0);
 }
 
 async function deleteMovimiento(id) {
     const { error } = await supabase.from('movimientos').delete().match({ id: id });
     if (error) {
         console.error('Error al borrar movimiento:', JSON.stringify(error, null, 2));
+        showError('No se pudo borrar el movimiento.');
     } else {
         getMovimientos();
     }
