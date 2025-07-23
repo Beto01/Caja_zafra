@@ -204,6 +204,47 @@ td:last-child {
         overflow-x: auto;
     }
 
+    /* Ocultar encabezado de la tabla en móviles */
+    #transactionsTable thead {
+        display: none;
+    }
+
+    /* Convertir filas en tarjetas */
+    #transactionsTable tr {
+        display: block;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+        margin-bottom: 15px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        padding: 10px;
+    }
+
+    /* Apilar celdas verticalmente */
+    #transactionsTable td {
+        display: block;
+        text-align: right;
+        padding-left: 50%;
+        position: relative;
+        border-bottom: 1px dotted #ccc;
+    }
+
+    #transactionsTable td:last-child {
+        border-bottom: none;
+        display: flex;
+        justify-content: flex-end; /* Alinear botones a la derecha */
+        padding-top: 10px;
+    }
+
+    /* Añadir etiquetas de datos */
+    #transactionsTable td::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 10px;
+        font-weight: bold;
+        text-align: left;
+        white-space: nowrap;
+    }
+
     input, select, button {
         padding: 14px;
         font-size: 1.1em;
