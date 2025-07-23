@@ -74,11 +74,11 @@ function renderMovimientos(movimientos) {
         });
 
         tr.innerHTML = `
-            <td>${mov.tipo === 'ingreso' ? '🟢' : '🔴'} ${mov.tipo}</td>
-            <td>${mov.descripcion}</td>
-            <td>${mov.cantidad.toFixed(2)} €</td>
-            <td>${fechaFormateada}</td>
-            <td>
+            <td data-label="Tipo">${mov.tipo === 'ingreso' ? '🟢' : '🔴'} ${mov.tipo}</td>
+            <td data-label="Descripción">${mov.descripcion}</td>
+            <td data-label="Cantidad">${mov.cantidad.toFixed(2)} €</td>
+            <td data-label="Fecha">${fechaFormateada}</td>
+            <td data-label="Acciones">
                 <button class="edit-btn" data-id="${mov.id}">Editar</button>
                 <button class="delete-btn" data-id="${mov.id}">Borrar</button>
             </td>
