@@ -171,6 +171,7 @@ async function generateDailySummary() {
     }, {});
 
     dailySummaryContent.innerHTML = '';
+    let isOdd = true;
     for (const date in groupedByDate) {
         const group = groupedByDate[date];
         let dailyIngresos = 0;
@@ -178,6 +179,10 @@ async function generateDailySummary() {
 
         const groupContainer = document.createElement('div');
         groupContainer.className = 'daily-summary-group';
+        if (isOdd) {
+            groupContainer.classList.add('odd-group');
+        }
+        isOdd = !isOdd;
 
         let movementsHtml = '<ul class="daily-movements-list">';
         group.forEach(mov => {
