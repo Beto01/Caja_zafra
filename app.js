@@ -114,9 +114,52 @@ async function generateDailySummary() {
         return;
     }
 
-    const groupedByDate = movimientos.reduce((acc, mov) => {
-        // --- CAMBIO REALIZADO AQUÍ ---
-        // Se ha eliminado 'year: 'numeric'' de las opciones de formato.
+    // --- LÓGICA DE CONSOLIDACIÓN DE INGRESOS ---
+    const consolidatedMovimientos = [];
+    let previousDayIngresos = 0;
+
+    // Agrupar por día para procesar en orden
+    const groupedByDay = movimientos.reduce((acc, mov) => {
+        const day = new Date(mov.created_at).toISOString().split('T')[0];
+        if (!acc[day]) {
+            acc[day] = [];
+        }
+        acc[day].push(mov);
+        return acc;
+    }, {});
+
+    const sortedDays = Object.keys(groupedByDay).sort();
+
+    for (let i = 0; i < sortedDays.length; i++) {
+        const day = sortedDays[i];
+        const dayMovimientos = groupedByDay[day];
+        let currentDayIngresos = 0;
+
+        // Añadir el ingreso consolidado del día anterior
+        if (previousDayIngresos > 0) {
+            const consolidatedIngreso = {
+                tipo: 'ingreso',
+                descripcion: `Ingreso consolidado del día anterior`,
+                cantidad: previousDayIngresos,
+                created_at: new Date(day).toISOString(),
+                consolidated: true // Flag para identificarlo
+            };
+            consolidatedMovimientos.unshift(consolidatedIngreso);
+        }
+
+        // Procesar movimientos del día actual
+        dayMovimientos.forEach(mov => {
+            consolidatedMovimientos.push(mov);
+            if (mov.tipo === 'ingreso') {
+                currentDayIngresos += mov.cantidad;
+            }
+        });
+
+        previousDayIngresos = currentDayIngresos;
+    }
+
+
+    const groupedByDate = consolidatedMovimientos.reduce((acc, mov) => {
         const date = new Date(mov.created_at).toLocaleDateString('es-ES', {
             weekday: 'long', month: 'long', day: 'numeric'
         });
@@ -127,7 +170,7 @@ async function generateDailySummary() {
         return acc;
     }, {});
 
-    dailySummaryContent.innerHTML = ''; 
+    dailySummaryContent.innerHTML = '';
     for (const date in groupedByDate) {
         const group = groupedByDate[date];
         let dailyIngresos = 0;
@@ -139,7 +182,8 @@ async function generateDailySummary() {
         let movementsHtml = '<ul class="daily-movements-list">';
         group.forEach(mov => {
             const icon = mov.tipo === 'ingreso' ? '🟢' : '🔴';
-            movementsHtml += `<li>${icon} ${mov.descripcion}: <strong>${mov.cantidad.toFixed(2)} €</strong></li>`;
+            const description = mov.consolidated ? `<strong>${mov.descripcion}</strong>` : mov.descripcion;
+            movementsHtml += `<li>${icon} ${description}: <strong>${mov.cantidad.toFixed(2)} €</strong></li>`;
 
             if (mov.tipo === 'ingreso') {
                 dailyIngresos += mov.cantidad;
@@ -148,7 +192,7 @@ async function generateDailySummary() {
             }
         });
         movementsHtml += '</ul>';
-        
+
         const balance = dailyIngresos - dailyGastos;
 
         groupContainer.innerHTML = `
