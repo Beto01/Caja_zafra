@@ -38,22 +38,19 @@
 
         <div class="transactions-container">
             <h2>Movimientos Recientes</h2>
-            <div class="table-wrapper">
-                <table id="transactionsTable">
-                    <thead>
-                        <tr>
-                            <th>Tipo</th>
-                            <th>Descripción</th>
-                            <th>Cantidad</th>
-                            <th>Fecha</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody id="transactionsTbody">
-                        <!-- Contenido generado por JavaScript -->
+            <table id="transactionsTable">
+                <thead>
+                    <tr>
+                        <th>Tipo</th>
+                        <th>Descripción</th>
+                        <th>Cantidad</th>
+                        <th>Fecha</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="transactionsTbody">
                     </tbody>
-                </table>
-            </div>
+            </table>
         </div>
     </div>
 
@@ -63,18 +60,6 @@
         </div>
         <h1>Resumen por Día</h1>
         <div id="daily-summary-content"></div>
-    </div>
-
-    <!-- Modal de Confirmación para Borrar -->
-    <div id="delete-modal" class="modal-overlay hidden">
-        <div class="modal-content">
-            <h3>Confirmar borrado</h3>
-            <p>¿Estás seguro de que quieres borrar este movimiento?</p>
-            <div class="modal-actions">
-                <button id="cancel-delete-btn" class="btn-secondary">Cancelar</button>
-                <button id="confirm-delete-btn" class="btn-danger">Borrar</button>
-            </div>
-        </div>
     </div>
 
 

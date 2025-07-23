@@ -7,6 +7,7 @@ const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 // --- SELECTORES DEL DOM ---
 const mainPage = document.getElementById('main-page');
 const summaryPage = document.getElementById('summary-page');
+
 const transactionForm = document.getElementById('transactionForm');
 const transactionsTbody = document.getElementById('transactionsTbody');
 const totalIngresosSpan = document.getElementById('total-ingresos');
@@ -15,18 +16,13 @@ const balanceTotalSpan = document.getElementById('balance-total');
 const formTitle = document.getElementById('form-title');
 const editIdInput = document.getElementById('edit-id');
 const submitButton = transactionForm.querySelector('button');
+
 const showSummaryBtn = document.getElementById('show-summary-btn');
 const backToMainBtn = document.getElementById('back-to-main-btn');
 const dailySummaryContent = document.getElementById('daily-summary-content');
 
-// --- SELECTORES DEL MODAL ---
-const deleteModal = document.getElementById('delete-modal');
-const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
-const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
-let movementIdToDelete = null;
-
-
 // --- NAVEGACIÓN ENTRE PÁGINAS ---
+
 function showMainPage() {
     mainPage.classList.remove('hidden');
     summaryPage.classList.add('hidden');
@@ -41,6 +37,7 @@ function showSummaryPage() {
 }
 
 // --- LÓGICA DE LA APLICACIÓN ---
+
 function showError(message) {
     alert(`Error: ${message}`);
 }
@@ -71,20 +68,19 @@ function renderMovimientos(movimientos) {
     movimientos.forEach(mov => {
         const tr = document.createElement('tr');
         const fechaFormateada = new Date(mov.created_at).toLocaleDateString('es-ES', {
-            day: '2-digit', month: '2-digit', year: 'numeric'
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric'
         });
 
-        // Se añaden los atributos data-label para el CSS responsive
         tr.innerHTML = `
-            <td data-label="Tipo">${mov.tipo === 'ingreso' ? '🟢' : '🔴'} ${mov.tipo}</td>
-            <td data-label="Descripción">${mov.descripcion}</td>
-            <td data-label="Cantidad">${mov.cantidad.toFixed(2)} €</td>
-            <td data-label="Fecha">${fechaFormateada}</td>
-            <td data-label="Acciones">
-                <div class="actions-container">
-                    <button class="edit-btn" data-id="${mov.id}">Editar</button>
-                    <button class="delete-btn" data-id="${mov.id}">Borrar</button>
-                </div>
+            <td>${mov.tipo === 'ingreso' ? '🟢' : '🔴'} ${mov.tipo}</td>
+            <td>${mov.descripcion}</td>
+            <td>${mov.cantidad.toFixed(2)} €</td>
+            <td>${fechaFormateada}</td>
+            <td>
+                <button class="edit-btn" data-id="${mov.id}">Editar</button>
+                <button class="delete-btn" data-id="${mov.id}">Borrar</button>
             </td>
         `;
         transactionsTbody.appendChild(tr);
@@ -103,6 +99,7 @@ function renderMovimientos(movimientos) {
 
 async function generateDailySummary() {
     dailySummaryContent.innerHTML = '<h3>Cargando resumen...</h3>';
+
     const { data: movimientos, error } = await fetchAllMovimientos();
 
     if (error) {
@@ -116,9 +113,53 @@ async function generateDailySummary() {
         dailySummaryContent.innerHTML = '<p>No hay movimientos para mostrar.</p>';
         return;
     }
-    
-    // Lógica original de resumen diario
-    const groupedByDate = movimientos.reduce((acc, mov) => {
+
+    // --- LÓGICA DE CONSOLIDACIÓN DE INGRESOS ---
+    const consolidatedMovimientos = [];
+    let previousDayIngresos = 0;
+
+    // Agrupar por día para procesar en orden
+    const groupedByDay = movimientos.reduce((acc, mov) => {
+        const day = new Date(mov.created_at).toISOString().split('T')[0];
+        if (!acc[day]) {
+            acc[day] = [];
+        }
+        acc[day].push(mov);
+        return acc;
+    }, {});
+
+    const sortedDays = Object.keys(groupedByDay).sort();
+
+    for (let i = 0; i < sortedDays.length; i++) {
+        const day = sortedDays[i];
+        const dayMovimientos = groupedByDay[day];
+        let currentDayIngresos = 0;
+
+        // Añadir el ingreso consolidado del día anterior
+        if (previousDayIngresos > 0) {
+            const consolidatedIngreso = {
+                tipo: 'ingreso',
+                descripcion: `Ingreso consolidado del día anterior`,
+                cantidad: previousDayIngresos,
+                created_at: new Date(day).toISOString(),
+                consolidated: true // Flag para identificarlo
+            };
+            consolidatedMovimientos.unshift(consolidatedIngreso);
+        }
+
+        // Procesar movimientos del día actual
+        dayMovimientos.forEach(mov => {
+            consolidatedMovimientos.push(mov);
+            if (mov.tipo === 'ingreso') {
+                currentDayIngresos += mov.cantidad;
+            }
+        });
+
+        previousDayIngresos = currentDayIngresos;
+    }
+
+
+    const groupedByDate = consolidatedMovimientos.reduce((acc, mov) => {
         const date = new Date(mov.created_at).toLocaleDateString('es-ES', {
             weekday: 'long', month: 'long', day: 'numeric'
         });
@@ -146,7 +187,8 @@ async function generateDailySummary() {
         let movementsHtml = '<ul class="daily-movements-list">';
         group.forEach(mov => {
             const icon = mov.tipo === 'ingreso' ? '🟢' : '🔴';
-            movementsHtml += `<li>${icon} ${mov.descripcion}: <strong>${mov.cantidad.toFixed(2)} €</strong></li>`;
+            const description = mov.consolidated ? `<strong>${mov.descripcion}</strong>` : mov.descripcion;
+            movementsHtml += `<li>${icon} ${description}: <strong>${mov.cantidad.toFixed(2)} €</strong></li>`;
 
             if (mov.tipo === 'ingreso') {
                 dailyIngresos += mov.cantidad;
@@ -214,34 +256,24 @@ function resetForm() {
     editIdInput.value = '';
     formTitle.textContent = 'Registrar Movimiento';
     submitButton.textContent = 'Añadir Movimiento';
+    window.scrollTo(0, 0);
 }
 
-// --- LÓGICA DEL MODAL DE BORRADO ---
-function openDeleteModal(id) {
-    movementIdToDelete = id;
-    deleteModal.classList.remove('hidden');
-}
-
-function closeDeleteModal() {
-    movementIdToDelete = null;
-    deleteModal.classList.add('hidden');
-}
-
-async function deleteMovimiento() {
-    if (!movementIdToDelete) return;
-    const { error } = await supabase.from('movimientos').delete().match({ id: movementIdToDelete });
+async function deleteMovimiento(id) {
+    const { error } = await supabase.from('movimientos').delete().match({ id: id });
     if (error) {
         console.error('Error al borrar movimiento:', JSON.stringify(error, null, 2));
         showError('No se pudo borrar el movimiento.');
     } else {
         getMovimientos();
     }
-    closeDeleteModal();
 }
 
 // --- EVENT LISTENERS ---
+
 showSummaryBtn.addEventListener('click', showSummaryPage);
 backToMainBtn.addEventListener('click', showMainPage);
+
 transactionForm.addEventListener('submit', handleFormSubmit);
 
 transactionsTbody.addEventListener('click', (event) => {
@@ -249,14 +281,11 @@ transactionsTbody.addEventListener('click', (event) => {
     if (target.classList.contains('edit-btn')) {
         handleEditClick(target.getAttribute('data-id'));
     } else if (target.classList.contains('delete-btn')) {
-        openDeleteModal(target.getAttribute('data-id'));
+        if (confirm('¿Estás seguro de que quieres borrar este movimiento?')) {
+            deleteMovimiento(target.getAttribute('data-id'));
+        }
     }
 });
-
-// Listeners para los botones del modal
-cancelDeleteBtn.addEventListener('click', closeDeleteModal);
-confirmDeleteBtn.addEventListener('click', deleteMovimiento);
-
 
 // --- INICIALIZACIÓN ---
 document.addEventListener('DOMContentLoaded', () => {

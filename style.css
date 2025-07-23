@@ -15,6 +15,7 @@ body {
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
+/* CAMBIO: Clase para ocultar elementos */
 .hidden {
     display: none;
 }
@@ -26,6 +27,7 @@ h1, h2, h3 {
     margin-top: 0;
 }
 
+/* CAMBIO: Estilos para los botones de navegación */
 .header-actions {
     margin-bottom: 20px;
     text-align: right;
@@ -46,13 +48,14 @@ h1, h2, h3 {
     background-color: #117a65;
 }
 
+
 .form-container {
     margin-bottom: 25px;
 }
 
 #transactionForm {
     display: grid;
-    grid-template-columns: 1fr 2fr 1fr auto;
+    grid-template-columns: 1fr 2fr 1fr 1fr;
     gap: 15px;
     align-items: center;
 }
@@ -62,8 +65,6 @@ input, select, button {
     border-radius: 5px;
     border: 1px solid #bdc3c7;
     font-size: 1em;
-    box-sizing: border-box; /* Añadido para mejor control de tamaño */
-    width: 100%; /* Añadido para que ocupe todo el espacio de la celda del grid */
 }
 
 button[type="submit"] {
@@ -94,10 +95,6 @@ button[type="submit"]:hover {
     font-size: 1.2em;
 }
 
-.table-wrapper {
-    overflow-x: auto; /* Permite scroll horizontal en la tabla si es necesario */
-}
-
 table {
     width: 100%;
     border-collapse: collapse;
@@ -114,22 +111,18 @@ thead {
     color: white;
 }
 
-td .actions-container {
+td:last-child {
     display: flex;
     gap: 5px;
 }
 
-.edit-btn, .delete-btn {
+.edit-btn {
+    background-color: #2980b9;
     color: white;
     padding: 8px 12px;
     border-radius: 4px;
     cursor: pointer;
     border: none;
-    font-size: 0.9em;
-}
-
-.edit-btn {
-    background-color: #2980b9;
 }
 
 .edit-btn:hover {
@@ -138,12 +131,18 @@ td .actions-container {
 
 .delete-btn {
     background-color: #e74c3c;
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
 }
 
 .delete-btn:hover {
     background-color: #c0392b;
 }
 
+/* CAMBIO: Estilos para la página de resumen */
 .daily-summary-group {
     background-color: #fdfefe;
     border: 1px solid #e5e7e9;
@@ -180,123 +179,4 @@ td .actions-container {
     padding-top: 10px;
     border-top: 2px solid #34495e;
     font-weight: bold;
-}
-
-/* --- ESTILOS PARA EL MODAL DE CONFIRMACIÓN --- */
-.modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.6);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1000;
-}
-
-.modal-content {
-    background-color: white;
-    padding: 25px;
-    border-radius: 8px;
-    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-    max-width: 400px;
-    width: 90%;
-    text-align: center;
-}
-
-.modal-content h3 {
-    border-bottom: none;
-    margin-bottom: 10px;
-}
-
-.modal-actions {
-    margin-top: 20px;
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-}
-
-.modal-actions button {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-weight: bold;
-}
-
-.btn-secondary {
-    background-color: #bdc3c7;
-}
-.btn-secondary:hover {
-    background-color: #95a5a6;
-}
-
-.btn-danger {
-    background-color: #e74c3c;
-    color: white;
-}
-.btn-danger:hover {
-    background-color: #c0392b;
-}
-
-
-/* --- MEDIA QUERIES PARA DISEÑO RESPONSIVE --- */
-
-@media (max-width: 768px) {
-    body {
-        padding: 10px;
-    }
-
-    .container {
-        padding: 15px;
-    }
-
-    #transactionForm {
-        grid-template-columns: 1fr; /* Apila los elementos del formulario */
-        gap: 10px;
-    }
-
-    /* Ocultar cabecera de la tabla y transformar filas */
-    table thead {
-        display: none;
-    }
-
-    table, tbody, tr, td {
-        display: block;
-        width: 100%;
-    }
-
-    table tr {
-        margin-bottom: 15px;
-        border: 1px solid #ddd;
-        border-radius: 5px;
-        padding: 10px;
-    }
-
-    table td {
-        text-align: right; /* Alinea el contenido a la derecha */
-        padding-left: 50%; /* Espacio para la etiqueta */
-        position: relative;
-        border-bottom: 1px solid #eee;
-    }
-
-    table td:last-child {
-        border-bottom: none;
-    }
-
-    table td::before {
-        content: attr(data-label); /* Usa el atributo data-label como etiqueta */
-        position: absolute;
-        left: 10px;
-        width: calc(50% - 20px);
-        padding-right: 10px;
-        font-weight: bold;
-        text-align: left;
-    }
-
-    td .actions-container {
-        justify-content: flex-end; /* Alinea los botones a la derecha */
-    }
 }
