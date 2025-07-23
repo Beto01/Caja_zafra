@@ -180,3 +180,36 @@ td:last-child {
     border-top: 2px solid #34495e;
     font-weight: bold;
 }
+
+/* --- ESTILOS PARA MÓVILES --- */
+@media (max-width: 768px) {
+    body {
+        padding: 10px;
+    }
+
+    .container {
+        padding: 15px;
+    }
+
+    h1 {
+        font-size: 1.5em;
+    }
+
+    #transactionForm {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .transactions-container {
+        overflow-x: auto;
+    }
+
+    input, select, button {
+        padding: 14px;
+        font-size: 1.1em;
+    }
+
+    .header-actions {
+        text-align: center;
+    }
+}
