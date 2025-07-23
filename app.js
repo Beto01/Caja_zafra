@@ -64,14 +64,24 @@ function renderMovimientos(movimientos) {
     transactionsTbody.innerHTML = '';
     let totalIngresos = 0;
     let totalGastos = 0;
+    let lastDate = null;
+    let isOdd = true;
 
     movimientos.forEach(mov => {
         const tr = document.createElement('tr');
-        const fechaFormateada = new Date(mov.created_at).toLocaleDateString('es-ES', {
+        const fecha = new Date(mov.created_at);
+        const fechaFormateada = fecha.toLocaleDateString('es-ES', {
             day: '2-digit',
             month: '2-digit',
             year: 'numeric'
         });
+
+        if (lastDate !== fecha.toDateString()) {
+            lastDate = fecha.toDateString();
+            isOdd = !isOdd;
+        }
+
+        tr.classList.add(isOdd ? 'odd-date' : 'even-date');
 
         tr.innerHTML = `
             <td data-label="Tipo">${mov.tipo === 'ingreso' ? '🟢' : '🔴'} ${mov.tipo}</td>
