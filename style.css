@@ -126,7 +126,7 @@ td:last-child {
 }
 
 .edit-btn:hover {
-    background-color: #2c3e50;
+    background-color: #1f618d;
 }
 
 .delete-btn {
@@ -156,16 +156,17 @@ td:last-child {
     padding-bottom: 5px;
 }
 
-.daily-summary-group ul {
+.daily-summary-group .daily-movements-list {
     list-style-type: none;
     padding: 0;
 }
 
-.daily-summary-group li {
+.daily-summary-group .daily-movements-list li {
     padding: 8px 0;
     border-bottom: 1px solid #f2f2f2;
 }
-.daily-summary-group li:last-child {
+
+.daily-summary-group .daily-movements-list li:last-child {
     border-bottom: none;
 }
 
